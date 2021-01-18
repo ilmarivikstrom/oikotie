@@ -4,28 +4,34 @@ from tqdm import trange
 from argparse import ArgumentParser
 from os.path import basename
 import sys
-from datetime import datetime
+import datetime
 
 
-def fetch_oikotie_urls(location):
-    base_url = "https://asunnot.oikotie.fi/myytavat-asunnot?locations=" + location + "&cardType=100&pagination="
+def fetch_oikotie_urls(location_string):
+    city = 'Unknown'
+    if len(location_string.split('%22')) == 3:
+        city = location_string.split('%22')[1]
+
+    base_url = "https://asunnot.oikotie.fi/myytavat-asunnot?locations=" + location_string + "&cardType=100&pagination="
     urls = get_urls(base_url)
 
-    write_url_file(urls)
-    write_log_file(location, len(urls))
+    finish_time = str(datetime.datetime.now()).replace(':', '-').replace(' ', '-').split('.')[0]
+
+    write_url_file(urls, city, finish_time)
+    write_log_file(city, len(urls), finish_time)
 
 
-def write_url_file(urls):
-    url_file = open('output/urls.txt', 'w')
+def write_url_file(urls, city, finish_time):
+    url_file = open('output/' + finish_time + '_urls_' + city + '.txt', 'w')
     string = '\n'.join(urls)
     url_file.write(string)
     url_file.close()
     print("URL file written.")
 
 
-def write_log_file(location, number_of_urls):
+def write_log_file(city, number_of_urls, finish_time):
     log_file = open('output/history.log', 'a')
-    log_file.write('Wrote {} URLs at {} for {} area.\n'.format(str(number_of_urls), str(datetime.now()), location))
+    log_file.write('Wrote {} URLs at {} for {} area.\n'.format(str(number_of_urls), finish_time, city))
     log_file.close()
     print("Log file written.")
 
@@ -71,7 +77,7 @@ def get_urls_from_cards(page):
 
 def main():
     parser = ArgumentParser(prog=basename(__file__))
-    parser.add_argument('--location', '-l', type=str, default="%5B%5B64,6,%22Helsinki%22%5D%5D")
+    parser.add_argument('--location_string', '-l', type=str, default="%5B%5B64,6,%22Helsinki%22%5D%5D")
     args = vars(parser.parse_args())
 
     fetch_oikotie_urls(**args)
