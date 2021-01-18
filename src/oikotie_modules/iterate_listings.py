@@ -41,9 +41,9 @@ def read_urls_from_file(url_file_time, url_file_city):
         for file_name in file_names:
             if file_name.split('.')[0].split('_')[-1] == url_file_city:
                 if latest == '':
-                    latest = file_names[0]
+                    latest = file_name
                 else:
-                    if file_names[0] > latest:
+                    if file_name > latest:
                         latest = file_names[0]
         print('Latest file is {}'.format(str(latest)))
         with open(latest) as f:
