@@ -1,3 +1,6 @@
+'''
+Fetch and save listing URLs for a given city.
+'''
 from bs4 import BeautifulSoup
 from requests_html import HTMLSession
 from tqdm import trange
@@ -7,7 +10,7 @@ import sys
 import datetime
 
 
-def fetch_oikotie_urls(location_string):
+def save_oikotie_urls(location_string):
     city = 'Unknown'
     if len(location_string.split('%22')) == 3:
         city = location_string.split('%22')[1]
@@ -15,7 +18,7 @@ def fetch_oikotie_urls(location_string):
     base_url = "https://asunnot.oikotie.fi/myytavat-asunnot?locations=" + location_string + "&cardType=100&pagination="
     urls = get_urls(base_url)
 
-    finish_time = str(datetime.datetime.now()).replace(':', '-').replace(' ', '-').split('.')[0]
+    finish_time = str(datetime.datetime.now()).replace('-', '').replace(':', '').replace(' ', '_').split('.')[0]
 
     write_url_file(urls, city, finish_time)
     write_log_file(city, len(urls), finish_time)
@@ -80,7 +83,7 @@ def main():
     parser.add_argument('--location_string', '-l', type=str, default="%5B%5B64,6,%22Helsinki%22%5D%5D")
     args = vars(parser.parse_args())
 
-    fetch_oikotie_urls(**args)
+    save_oikotie_urls(**args)
 
 
 if __name__ == "__main__":
