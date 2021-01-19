@@ -15,6 +15,9 @@ import time
 def iterate_listings(url_file_time, url_file_city):
     urls = read_urls_from_file(url_file_time, url_file_city)
 
+    total_time = 3600 - 0.3 * len(urls)
+    time_per_iteration = total_time / len(urls)
+
     listings = []
     session = HTMLSession()
 
@@ -23,14 +26,16 @@ def iterate_listings(url_file_time, url_file_city):
         prerender_soup = BeautifulSoup(page.html.html, 'html.parser')
         listing = str(prerender_soup.find_all(class_=["details-grid__item-title", "details-grid__item-value"]))
         listings.append(listing)
+        time.sleep(time_per_iteration)
 
     finish_time = str(datetime.datetime.now()).replace('-', '').replace(':', '').replace(' ', '_').split('.')[0]
     
-    content_file = open('output/' + finish_time + '_content_' + url_file_city + '.txt', 'w')
+    content_file = open('output/' + finish_time + '_content_' + url_file_city + '.html', 'w')
     string = '\n'.join(listings)
     content_file.write(string)
     content_file.close()
     print("Content file written with {} rows.".format(str(len(listings))))
+    write_log_file(url_file_city, len(listings), finish_time)
 
 
 def read_urls_from_file(url_file_time, url_file_city):
@@ -44,7 +49,7 @@ def read_urls_from_file(url_file_time, url_file_city):
                     latest = file_name
                 else:
                     if file_name > latest:
-                        latest = file_names[0]
+                        latest = file_name
         print('Latest file is {}'.format(str(latest)))
         with open(latest) as f:
             urls = f.read().splitlines()
@@ -54,6 +59,13 @@ def read_urls_from_file(url_file_time, url_file_city):
         print('Not implemented yet. Exiting.')
         sys.exit()
         return []
+
+
+def write_log_file(city, number_of_urls, finish_time):
+    log_file = open('output/history.log', 'a')
+    log_file.write('Wrote contents of {} URLs at {} for {} area.\n'.format(str(number_of_urls), finish_time, city))
+    log_file.close()
+    print("Log file written.")
 
 
 def main():
