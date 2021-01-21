@@ -18,7 +18,6 @@ def iterate_listings(url_file_time, url_file_city):
 
     total_time = 3600 - 0.65 * len(urls)
     time_per_iteration = total_time / len(urls)
-    time_per_iteration = 0
 
     listings = []
     session = HTMLSession()
