@@ -1,13 +1,15 @@
 '''
 Fetch and save listing URLs for a given city.
 '''
+
+import datetime
+import sys
+from argparse import ArgumentParser
+from os.path import basename
+
 from bs4 import BeautifulSoup
 from requests_html import HTMLSession
 from tqdm import trange
-from argparse import ArgumentParser
-from os.path import basename
-import sys
-import datetime
 
 
 def save_oikotie_urls(location_string):
@@ -15,7 +17,7 @@ def save_oikotie_urls(location_string):
     if len(location_string.split('%22')) == 3:
         city = location_string.split('%22')[1]
 
-    base_url = "https://asunnot.oikotie.fi/myytavat-asunnot?locations=" + location_string + "&cardType=100&pagination="
+    base_url = 'https://asunnot.oikotie.fi/myytavat-asunnot?locations={}&cardType=100&pagination='.format(location_string)
     urls = get_urls(base_url)
 
     finish_time = str(datetime.datetime.now()).replace('-', '').replace(':', '').replace(' ', '_').split('.')[0]
@@ -25,18 +27,16 @@ def save_oikotie_urls(location_string):
 
 
 def write_url_file(urls, city, finish_time):
-    url_file = open('output/' + finish_time + '_urls_' + city + '.txt', 'w')
-    string = '\n'.join(urls)
-    url_file.write(string)
-    url_file.close()
-    print("URL file written.")
+    with open('output/{}_urls_{}.txt'.format(finish_time, city), 'w') as url_file:
+        string = '\n'.join(urls)
+        url_file.write(string)
+        print('URL file written.')
 
 
 def write_log_file(city, number_of_urls, finish_time):
-    log_file = open('output/history.log', 'a')
-    log_file.write('Wrote {} URLs at {} for {} area.\n'.format(str(number_of_urls), finish_time, city))
-    log_file.close()
-    print("Log file written.")
+    with open('output/history.log', 'a') as log_file:
+        log_file.write('Wrote {} URLs at {} for {} area.\n'.format(str(number_of_urls), finish_time, city))
+        print('Log file written.')
 
 
 def get_urls(base_url):
@@ -50,22 +50,21 @@ def get_urls(base_url):
         urls_from_cards = get_urls_from_cards(page)
         for url in urls_from_cards:
             urls.append(url)
-    
     return urls
 
 
 def get_number_of_pages(base_url):
     try:
         session = HTMLSession()
-        first_page = session.get(base_url + "1")
+        first_page = session.get('{}1'.format(base_url))
         first_page.html.render()
         first_page_soup = BeautifulSoup(first_page.html.html, 'html.parser')
-        first_page_results = first_page_soup.find_all("span", class_="ng-binding")
+        first_page_results = first_page_soup.find_all('span', class_='ng-binding')
         number_of_pages = int(first_page_results[6].text.split('/')[1])
-        print("Pages: " + str(number_of_pages))
+        print('Pages: {}'.format(str(number_of_pages)))
         return number_of_pages
     except IndexError:
-        print("Error when fetching number of pages for location. Check that your location string argument is valid.")
+        print('Error when fetching number of pages for location. Check that your location string argument is valid.')
         sys.exit()
 
 
@@ -80,11 +79,11 @@ def get_urls_from_cards(page):
 
 def main():
     parser = ArgumentParser(prog=basename(__file__))
-    parser.add_argument('--location_string', '-l', type=str, default="%5B%5B64,6,%22Helsinki%22%5D%5D")
+    parser.add_argument('--location_string', '-l', type=str, default='%5B%5B64,6,%22Helsinki%22%5D%5D')
     args = vars(parser.parse_args())
 
     save_oikotie_urls(**args)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
