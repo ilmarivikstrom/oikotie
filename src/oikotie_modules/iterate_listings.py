@@ -32,13 +32,17 @@ def iterate_listings(url_file_time, url_file_city):
             if details[j]['class'] == ['details-grid__item-title']:
                 listing_details[details[j].text] = details[j + 1].text.replace('\xa0', ' ')
 
-        listing = {
-            'Osoite': prerender_soup.find('meta', attrs={'property': 'og:street-address'})['content'],
-            'Postinumero': prerender_soup.find('meta', attrs={'property': 'og:postal_code'})['content'],
-            'Id': prerender_soup.find('meta', attrs={'name': 'SAC:card_ID'})['content'],
-            'Latitude': prerender_soup.find('meta', attrs={'property': 'place:location:latitude'})['content'],
-            'Longitude': prerender_soup.find('meta', attrs={'property': 'place:location:latitude'})['content'],
-        }
+        try:
+            listing = {
+                'Osoite': prerender_soup.find('meta', attrs={'property': 'og:street-address'})['content'],
+                'Postinumero': prerender_soup.find('meta', attrs={'property': 'og:postal_code'})['content'],
+                'Id': prerender_soup.find('meta', attrs={'name': 'SAC:card_ID'})['content'],
+                'Latitude': prerender_soup.find('meta', attrs={'property': 'place:location:latitude'})['content'],
+                'Longitude': prerender_soup.find('meta', attrs={'property': 'place:location:latitude'})['content'],
+            }
+        except TypeError:
+          print('TypeError occured when iterating through listing. Continuing...')
+          listing = {}
 
         complete_listing = {**listing_details, **listing}
 
